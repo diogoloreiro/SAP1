@@ -1,0 +1,88 @@
+# =============================================================
+# sap1_fpga.qsf  -  Pinagem do SAP-1 para Terasic DE10-Lite
+#                   (Intel MAX 10 - 10M50DAF484C7G)
+#
+# Top-level entity: sap1_fpga
+#
+# COMO USAR NO QUARTUS:
+#   1. Crie o projeto Quartus DENTRO desta pasta fpga/ com top-level "sap1_fpga".
+#      (os caminhos ../rtl/ abaixo assumem o projeto rodando em fpga/)
+#   2. Adicione os arquivos de src/ (.v) ao projeto.
+#   3. Assignments > Import Assignments... e selecione este .qsf
+#      (ou cole as linhas abaixo no .qsf do projeto).
+#   4. Compile (Processing > Start Compilation) e grave (Programmer).
+#
+# >>> CONFIRA NO MANUAL DA DE10-Lite <<<
+#   Os pinos abaixo seguem a tabela oficial do "DE10-Lite User Manual"
+#   da Terasic. Recomendo conferir contra o .qsf de exemplo que vem no
+#   CD/sistema da placa antes de gravar.
+# =============================================================
+
+# ---- Dispositivo ----
+set_global_assignment -name FAMILY "MAX 10"
+set_global_assignment -name DEVICE 10M50DAF484C7G
+set_global_assignment -name TOP_LEVEL_ENTITY sap1_fpga
+
+# ---- Arquivos de projeto ----
+set_global_assignment -name VERILOG_FILE ../rtl/program_counter.v
+set_global_assignment -name VERILOG_FILE ../rtl/mar.v
+set_global_assignment -name VERILOG_FILE ../rtl/ram_16x8.v
+set_global_assignment -name VERILOG_FILE ../rtl/instruction_register.v
+set_global_assignment -name VERILOG_FILE ../rtl/accumulator.v
+set_global_assignment -name VERILOG_FILE ../rtl/adder_subtractor.v
+set_global_assignment -name VERILOG_FILE ../rtl/register_b.v
+set_global_assignment -name VERILOG_FILE ../rtl/output_register.v
+set_global_assignment -name VERILOG_FILE ../rtl/controller_sequencer.v
+set_global_assignment -name VERILOG_FILE ../rtl/sap1_top.v
+set_global_assignment -name VERILOG_FILE clock_divider.v
+set_global_assignment -name VERILOG_FILE debouncer.v
+set_global_assignment -name VERILOG_FILE seg7.v
+set_global_assignment -name VERILOG_FILE sap1_fpga.v
+
+# ---- Clock de 50 MHz (MAX10_CLK1_50) ----
+set_location_assignment PIN_P11 -to MAX10_CLK1_50
+
+# ---- Botoes KEY[1:0] (ativos em baixo) ----
+set_location_assignment PIN_B8  -to KEY[0]   ;# RESET
+set_location_assignment PIN_A7  -to KEY[1]   ;# STEP (clock manual)
+
+# ---- Chave SW[0] (modo de clock: 0=auto, 1=manual) ----
+set_location_assignment PIN_C10 -to SW[0]
+
+# ---- LEDs vermelhos LEDR[9:0] ----
+set_location_assignment PIN_A8  -to LEDR[0]
+set_location_assignment PIN_A9  -to LEDR[1]
+set_location_assignment PIN_A10 -to LEDR[2]
+set_location_assignment PIN_B10 -to LEDR[3]
+set_location_assignment PIN_D13 -to LEDR[4]
+set_location_assignment PIN_C13 -to LEDR[5]
+set_location_assignment PIN_E14 -to LEDR[6]
+set_location_assignment PIN_D14 -to LEDR[7]
+set_location_assignment PIN_A11 -to LEDR[8]
+set_location_assignment PIN_B11 -to LEDR[9]   ;# indicador de HLT
+
+# ---- Display de 7 segmentos HEX0 (nibble baixo; HEX0[7]=ponto) ----
+set_location_assignment PIN_C14 -to HEX0[0]
+set_location_assignment PIN_E15 -to HEX0[1]
+set_location_assignment PIN_C15 -to HEX0[2]
+set_location_assignment PIN_C16 -to HEX0[3]
+set_location_assignment PIN_E16 -to HEX0[4]
+set_location_assignment PIN_D17 -to HEX0[5]
+set_location_assignment PIN_C17 -to HEX0[6]
+set_location_assignment PIN_D15 -to HEX0[7]
+
+# ---- Display de 7 segmentos HEX1 (nibble alto; HEX1[7]=ponto) ----
+set_location_assignment PIN_C18 -to HEX1[0]
+set_location_assignment PIN_D18 -to HEX1[1]
+set_location_assignment PIN_E18 -to HEX1[2]
+set_location_assignment PIN_B16 -to HEX1[3]
+set_location_assignment PIN_A17 -to HEX1[4]
+set_location_assignment PIN_A18 -to HEX1[5]
+set_location_assignment PIN_B17 -to HEX1[6]
+set_location_assignment PIN_A16 -to HEX1[7]
+
+# ---- Padrao de I/O (DE10-Lite usa 3.3-V LVTTL nos bancos de usuario) ----
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+
+# ---- Pinos nao usados como entrada tri-stated (seguro) ----
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS "AS INPUT TRI-STATED"
