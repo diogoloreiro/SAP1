@@ -1,0 +1,45 @@
+// ============================================================
+// PROGRAMA 1 : 3^3 = 27
+// Saidas (OUT): mostra 9 (=3^2) e depois 27 (=0x1B)
+// Display final ao parar:  HEX5=4  HEX4=H  HEX3HEX2=1B  HEX1HEX0=1B
+//
+// COMO USAR: cole o bloco "mem[...]" abaixo entre os marcadores
+//   ">>> INICIO DO PROGRAMA" e ">>> FIM DO PROGRAMA" do ram_16x8.v
+//   (substituindo o que estiver la). Depois recompile e regrave.
+//
+// Listagem (endereco : binario : instrucao):
+//   0  0000 1100  LDA 12     A <- 3
+//   1  0001 1100  ADD 12     A <- 6
+//   2  0001 1100  ADD 12     A <- 9   (3^2)
+//   3  1110 0000  OUT        mostra 09
+//   4  0000 1101  LDA 13     A <- 9
+//   5  0001 1101  ADD 13     A <- 18
+//   6  0001 1101  ADD 13     A <- 27
+//   7  0010 1110  SUB 14     A <- 24
+//   8  0001 1100  ADD 12     A <- 27
+//   9  0001 1111  ADD 15     A <- 27  (3^3)
+//  10  1110 0000  OUT        mostra 1B (27)
+//  11  1111 0000  HLT
+//  12  0000 0011  dado = 3
+//  13  0000 1001  dado = 9
+//  14  0000 0011  dado = 3
+//  15  0000 0000  dado = 0
+// ============================================================
+
+        // Programa 1: 3^3 = 27  (mostra 9 e depois 27)
+        mem[0]  = 8'b0000_1100; // LDA 12
+        mem[1]  = 8'b0001_1100; // ADD 12
+        mem[2]  = 8'b0001_1100; // ADD 12   -> A = 9 (3^2)
+        mem[3]  = 8'b1110_0000; // OUT       (mostra 09)
+        mem[4]  = 8'b0000_1101; // LDA 13
+        mem[5]  = 8'b0001_1101; // ADD 13
+        mem[6]  = 8'b0001_1101; // ADD 13   -> A = 27
+        mem[7]  = 8'b0010_1110; // SUB 14
+        mem[8]  = 8'b0001_1100; // ADD 12
+        mem[9]  = 8'b0001_1111; // ADD 15   -> A = 27 (3^3)
+        mem[10] = 8'b1110_0000; // OUT       (mostra 1B = 27)
+        mem[11] = 8'b1111_0000; // HLT
+        mem[12] = 8'd3;         // dado
+        mem[13] = 8'd9;         // dado
+        mem[14] = 8'd3;         // dado
+        mem[15] = 8'd0;         // dado

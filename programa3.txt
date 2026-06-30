@@ -1,0 +1,46 @@
+// ============================================================
+// PROGRAMA 3 : 3 x 4 = 12   (multiplicacao por somas repetidas)
+// Saidas (OUT): mostra 12 (=0x0C)
+// Display final ao parar:  HEX5=4  HEX4=H  HEX3HEX2=0C  HEX1HEX0=0C
+//
+// COMO USAR: cole o bloco "mem[...]" abaixo entre os marcadores
+//   ">>> INICIO DO PROGRAMA" e ">>> FIM DO PROGRAMA" do ram_16x8.v.
+//
+// Ideia: soma o 3 quatro vezes (3+3+3+3 = 12).
+//
+// Listagem (endereco : binario : instrucao):
+//   0  0000 1011  LDA 11     A <- 3
+//   1  0001 1011  ADD 11     A <- 6
+//   2  0001 1011  ADD 11     A <- 9
+//   3  0001 1011  ADD 11     A <- 12
+//   4  1110 0000  OUT        mostra 0C (12)
+//   5  0010 1100  SUB 12     A <- 12  (dado 0)
+//   6  0001 1101  ADD 13     A <- 12  (dado 0)
+//   7  0010 1110  SUB 14     A <- 12  (dado 0)
+//   8  0001 1111  ADD 15     A <- 12  (dado 0)
+//   9  1110 0000  OUT        mostra 0C (12)
+//  10  1111 0000  HLT
+//  11  0000 0011  dado = 3
+//  12  0000 0000  dado = 0
+//  13  0000 0000  dado = 0
+//  14  0000 0000  dado = 0
+//  15  0000 0000  dado = 0
+// ============================================================
+
+        // Programa 3: 3 x 4 = 12  (somas repetidas de 3)
+        mem[0]  = 8'b0000_1011; // LDA 11
+        mem[1]  = 8'b0001_1011; // ADD 11
+        mem[2]  = 8'b0001_1011; // ADD 11
+        mem[3]  = 8'b0001_1011; // ADD 11   -> 12
+        mem[4]  = 8'b1110_0000; // OUT       -> 12
+        mem[5]  = 8'b0010_1100; // SUB 12   (dado 0)
+        mem[6]  = 8'b0001_1101; // ADD 13   (dado 0)
+        mem[7]  = 8'b0010_1110; // SUB 14   (dado 0)
+        mem[8]  = 8'b0001_1111; // ADD 15   (dado 0)
+        mem[9]  = 8'b1110_0000; // OUT       -> 12
+        mem[10] = 8'b1111_0000; // HLT
+        mem[11] = 8'd3;         // dado  <- o '3' precisa estar no endereco 11
+        mem[12] = 8'd0;         // dado
+        mem[13] = 8'd0;         // dado
+        mem[14] = 8'd0;         // dado
+        mem[15] = 8'd0;         // dado

@@ -1,0 +1,52 @@
+# =============================================================
+# .gitignore - SAP-1 (Quartus Prime + ModelSim)
+# Mantem no repo: fontes .v, .qsf, .qpf, testbenches, .do, docs,
+# diagramas e programas .txt. Ignora artefatos de build.
+# =============================================================
+
+# ---- Quartus: pastas e relatorios de compilacao ----
+db/
+incremental_db/
+output_files/
+qdb/
+.qsys_edit/
+*.rpt
+*.summary
+*.smsg
+*.pin
+*.done
+*.jdi
+*.sld
+*.qws            # workspace do Quartus (especifico do usuario)
+c5_pin_model_dump.txt
+PLLJ_PLLSPE_INFO.txt
+
+# ---- Quartus: bitstreams gerados ----
+*.sof
+*.pof
+*.rbf
+*.jic
+
+# ---- ModelSim / Questa ----
+work/
+transcript
+*.wlf
+wlf*
+vsim.wlf
+*.vstf
+modelsim.ini
+.modelsim
+vish_stacktrace.vstf
+
+# ---- Simulacao (gerados) ----
+simulation/
+*.vcd
+*.vvp
+a.out
+
+# ---- Sistema / backups de editor ----
+.DS_Store
+Thumbs.db
+*~
+*.bak
+*.orig

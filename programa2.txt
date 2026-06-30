@@ -1,0 +1,44 @@
+// ============================================================
+// PROGRAMA 2 : (((7+3)-2)+5)-4 +7-3+5
+// Saidas (OUT): mostra 9 e depois 18 (=0x12)
+// Display final ao parar:  HEX5=4  HEX4=H  HEX3HEX2=12  HEX1HEX0=12
+//
+// COMO USAR: cole o bloco "mem[...]" abaixo entre os marcadores
+//   ">>> INICIO DO PROGRAMA" e ">>> FIM DO PROGRAMA" do ram_16x8.v.
+//
+// Listagem (endereco : binario : instrucao):
+//   0  0000 1011  LDA 11     A <- 7
+//   1  0001 1100  ADD 12     A <- 10
+//   2  0010 1101  SUB 13     A <- 8
+//   3  0001 1110  ADD 14     A <- 13
+//   4  0010 1111  SUB 15     A <- 9
+//   5  1110 0000  OUT        mostra 09
+//   6  0001 1011  ADD 11     A <- 16
+//   7  0010 1100  SUB 12     A <- 13
+//   8  0001 1110  ADD 14     A <- 18
+//   9  1110 0000  OUT        mostra 12 (18)
+//  10  1111 0000  HLT
+//  11  0000 0111  dado = 7
+//  12  0000 0011  dado = 3
+//  13  0000 0010  dado = 2
+//  14  0000 0101  dado = 5
+//  15  0000 0100  dado = 4
+// ============================================================
+
+        // Programa 2: (((7+3)-2)+5)-4 +7-3+5   (mostra 9 e depois 18)
+        mem[0]  = 8'b0000_1011; // LDA 11
+        mem[1]  = 8'b0001_1100; // ADD 12
+        mem[2]  = 8'b0010_1101; // SUB 13
+        mem[3]  = 8'b0001_1110; // ADD 14
+        mem[4]  = 8'b0010_1111; // SUB 15
+        mem[5]  = 8'b1110_0000; // OUT       -> 9
+        mem[6]  = 8'b0001_1011; // ADD 11
+        mem[7]  = 8'b0010_1100; // SUB 12
+        mem[8]  = 8'b0001_1110; // ADD 14
+        mem[9]  = 8'b1110_0000; // OUT       -> 18
+        mem[10] = 8'b1111_0000; // HLT
+        mem[11] = 8'd7;         // dado
+        mem[12] = 8'd3;         // dado
+        mem[13] = 8'd2;         // dado
+        mem[14] = 8'd5;         // dado
+        mem[15] = 8'd4;         // dado
