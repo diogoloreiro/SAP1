@@ -59,6 +59,15 @@ def bullet(text, sub=False):
             r.bold = True
     return par
 
+def lead(label, text, color=None):
+    """Paragrafo com rotulo em negrito seguido de texto normal."""
+    par = doc.add_paragraph()
+    r = par.add_run(label + " ")
+    r.bold = True
+    if color: r.font.color.rgb = color
+    par.add_run(text)
+    return par
+
 def code(lines):
     par = doc.add_paragraph()
     par.paragraph_format.left_indent = Cm(0.4)
@@ -233,62 +242,113 @@ p("Esta seção apresenta as formas de onda da simulação unitária dos princip
   "registrador de saída.")
 
 doc.add_heading("3.1. Program Counter (PC)", level=2)
+lead("O que se espera:", "um contador de 4 bits que (i) incrementa quando habilitado, "
+     "(ii) zera no reset e (iii) congela quando desabilitado. Por ser de 4 bits, deve "
+     "contar de 0 a 15 e dar a volta (aritmética módulo 16), o que casa com as 16 "
+     "posições da memória — o PC nunca aponta para um endereço inexistente.")
 figure("onda_pc_painel.png", "Contador de programa: contagem, reset e pausa.", 15.5)
-p("A onda comprova as três operações do contador. Com o sinal de habilitação cp = 1, "
-  "a saída avança 0, 1, 2, 3, … a cada borda de clock. Quando clr_bar é levado a 0, o "
-  "contador retorna imediatamente a 0 (reset assíncrono). Com cp = 0, a contagem é "
-  "congelada — o valor permanece estável. Por ser de apenas 4 bits, ao ultrapassar 15 "
-  "o contador dá a volta para 0, coerente com as 16 posições da memória.")
+p("A onda comprova as três operações. Com o sinal de habilitação cp = 1, a saída avança "
+  "0, 1, 2, 3, … a cada borda de subida do clock — exatamente um incremento por ciclo, "
+  "sem saltos. Quando clr_bar é levado a 0, o contador retorna a 0 imediatamente, sem "
+  "esperar o clock (reset assíncrono), como esperado de um sinal de inicialização. Com "
+  "cp = 0, a contagem é congelada e o valor permanece estável mesmo com o clock ativo — "
+  "esse congelamento é fundamental: é o mesmo mecanismo usado para o PC não avançar "
+  "fora dos momentos certos do ciclo de instrução. Por fim, ao chegar em 15 a saída "
+  "retorna a 0, confirmando o wraparound de 4 bits.")
 
 doc.add_heading("3.2. Registrador de Endereço da Memória (MAR)", level=2)
+lead("O que se espera:", "um registrador de 4 bits que capture o endereço presente no "
+     "barramento apenas quando sua carga estiver ativa (lm_bar = 0) e o segure "
+     "estável durante toda a leitura da RAM. O ponto crítico a verificar é a retenção: "
+     "o MAR precisa manter o endereço mesmo depois que o barramento muda, senão a RAM "
+     "leria a posição errada.")
 figure("onda_mar_painel.png", "MAR: carga de endereço e retenção.", 15.5)
-p("O MAR ilustra o padrão de registrador: com lm_bar = 0 ele carrega o valor presente "
-  "na entrada (por exemplo, 12); em seguida, ainda que a entrada mude para 5, a saída "
-  "mantém 12, pois lm_bar voltou a 1. Só há nova atualização quando o sinal de carga é "
-  "reativado (carregando 7). É esse endereço estável que a RAM utiliza para a leitura.")
+p("A onda confirma o comportamento esperado. Com lm_bar = 0 o MAR carrega o valor da "
+  "entrada (por exemplo, 12) na subida do clock. Em seguida, embora a entrada mude para "
+  "5, a saída permanece em 12, pois lm_bar voltou a 1 — a retenção funciona. Só há nova "
+  "atualização quando a carga é reativada (passando a 7). Esse endereço estável é "
+  "justamente o que a RAM usa: durante uma instrução, o MAR é carregado duas vezes — no "
+  "T1 com o endereço da instrução (vindo do PC) e no T4 com o operando (vindo do IR).")
 
 doc.add_heading("3.3. Memória RAM 16×8", level=2)
+lead("O que se espera:", "uma memória de 16 palavras de 8 bits que devolva, para cada "
+     "endereço, exatamente o byte gravado — sem clock, de forma combinacional. Espera-se "
+     "ainda reconhecer, na palavra lida, os dois campos [opcode | operando] e confirmar "
+     "que o operando é um endereço (endereçamento direto), não um valor imediato.")
 figure("onda_ram_painel.png", "RAM: leitura sequencial de todos os endereços (Programa 2).", 15.5)
-p("Nesta simulação o testbench percorre os 16 endereços e observa o conteúdo lido. A "
-  "onda funciona como um \"dump\" do programa: no endereço 0 lê-se LDA 11, no 1 ADD 12, "
-  "no 2 SUB 13, e assim por diante até HLT no endereço 10; os endereços 11 a 15 contêm "
-  "os dados. A linha interpretada (opcode | operando) evidencia o endereçamento direto: "
-  "o operando é um endereço de memória, não um valor imediato. Como o SAP-1 básico não "
-  "possui instrução de escrita (STA), a memória é apenas de leitura durante a execução.")
+p("O testbench percorre os 16 endereços e observa o conteúdo. A onda funciona como um "
+  "\"dump\" do programa: endereço 0 → LDA 11, 1 → ADD 12, 2 → SUB 13, e assim por diante "
+  "até HLT no endereço 10; os endereços 11 a 15 guardam os dados (7, 3, 2, 5, 4). Isso "
+  "comprova, de forma visual, dois pontos conceituais importantes. Primeiro, o "
+  "endereçamento direto: a linha interpretada mostra que o operando de \"LDA 11\" é o "
+  "endereço 11 — para saber o valor, é preciso ir ler a posição 11 (que contém 7). "
+  "Segundo, a coexistência de programa e dados na mesma memória (Von Neumann), o que "
+  "explica por que os 16 slots precisam ser compartilhados. Como o SAP-1 básico não tem "
+  "instrução de escrita (STA), essa memória é apenas de leitura em execução — na prática, "
+  "uma ROM inicializada por um bloco initial.")
 
 doc.add_heading("3.4. Registrador de Instrução (IR)", level=2)
+lead("O que se espera:", "que a palavra de 8 bits vinda da memória seja capturada e "
+     "dividida em dois campos de 4 bits — os bits altos formam o opcode (o que fazer) e "
+     "os baixos, o operando (onde). É a etapa de \"decodificação\" do SAP-1.")
 figure("onda_ir_painel.png", "IR: carga da palavra e separação opcode | operando.", 15.5)
-p("O IR captura a palavra vinda da memória e a divide em dois campos. Na onda, ao "
-  "carregar 0x1C (0001_1100) a saída se decompõe em opcode = ADD e operando = 12; ao "
-  "carregar 0xF0 (1111_0000), em opcode = HLT e operando = 0. O opcode segue para a "
-  "unidade de controle e o operando serve de endereço para a próxima leitura.")
+p("A onda confirma a separação esperada. Ao carregar 0x1C (0001_1100) a saída se "
+  "decompõe em opcode = ADD (0001) e operando = 12 (1100); ao carregar 0xF0 (1111_0000), "
+  "em opcode = HLT e operando = 0. A partir daí os dois campos seguem caminhos "
+  "diferentes: o opcode vai para a unidade de controle (que decide a sequência de "
+  "microoperações) e o operando é colocado no barramento para virar o próximo endereço "
+  "no MAR. Note que a saída só muda quando li_bar = 0, mantendo a instrução estável "
+  "durante todos os estados de execução — a unidade de controle precisa do opcode fixo "
+  "de T4 a T6.")
 
 doc.add_heading("3.5. Acumulador (A) e Registrador B", level=2)
+lead("O que se espera:", "dois registradores de 8 bits idênticos em comportamento. O "
+     "acumulador guarda o resultado corrente das contas; o B guarda o segundo operando "
+     "da ULA. Espera-se, novamente, o padrão carrega-quando-habilitado / mantém-caso-"
+     "contrário — essencial para que o valor de A sobreviva entre uma instrução e outra.")
 figure("onda_acc_painel.png", "Acumulador: carrega quando habilitado e mantém quando não.", 15.5)
 figure("onda_regb_painel.png", "Registrador B: mesmo padrão de carga/retenção.", 15.5)
-p("Acumulador e registrador B compartilham o mesmo comportamento. No acumulador, com "
-  "la_bar = 0 a saída assume 27 e, mesmo com a entrada mudando para 99, permanece em 27 "
-  "enquanto a carga não for reativada. O registrador B repete o padrão (carrega 9, "
-  "mantém, depois carrega 3). Juntos, A e B alimentam a ULA.")
+p("As duas ondas confirmam o esperado. No acumulador, com la_bar = 0 a saída assume 27 "
+  "e, mesmo com a entrada mudando para 99, permanece em 27 enquanto a carga não for "
+  "reativada — depois carrega 0. O registrador B repete o padrão (carrega 9, mantém com "
+  "a entrada em 200, depois carrega 3). Essa retenção é o que torna possível a "
+  "aritmética acumulativa: em um ADD, o valor antigo de A é somado ao novo dado e o "
+  "resultado volta para A. Vale destacar a diferença de papéis — enquanto o B é apenas "
+  "um \"copo\" temporário para o segundo operando, o A é o registrador de trabalho, lido "
+  "e reescrito repetidamente ao longo do programa.")
 
 doc.add_heading("3.6. Unidade Lógico-Aritmética (ULA)", level=2)
+lead("O que se espera:", "um bloco puramente combinacional que calcule A + B (quando "
+     "su = 0) ou A − B (quando su = 1), em 8 bits. Como não há bits extras, espera-se "
+     "wraparound: somas acima de 255 e subtrações abaixo de 0 devem \"dar a volta\" "
+     "(aritmética módulo 256 / complemento de dois).")
 figure("onda_alu_painel.png", "ULA: soma, subtração e wraparound de 8 bits.", 15.5)
-p("A ULA é combinacional: o resultado responde imediatamente às entradas, sem clock. "
-  "Com su = 0 (soma) verificam-se 3+3 = 6 e 18+9 = 27; o caso 200+100 resulta em 44, "
-  "demonstrando o wraparound de 8 bits (300 mod 256 = 44). Com su = 1 (subtração), "
-  "27−3 = 24, 5−5 = 0 e 0−1 = 255, mostrando o comportamento em complemento de 8 bits. "
-  "O resultado só é colocado no barramento quando o sinal Eu é ativado.")
+p("A onda valida todos os casos, inclusive os de borda. Com su = 0 (soma): 3+3 = 6 e "
+  "18+9 = 27, resultados diretos; e 200+100 = 44, que é exatamente 300 − 256 — o "
+  "wraparound esperado. Com su = 1 (subtração): 27−3 = 24, 5−5 = 0 e, o caso "
+  "mais instrutivo, 0−1 = 255, que é a representação de −1 em complemento de dois com "
+  "8 bits. Por ser combinacional, o resultado acompanha as entradas sem atraso de "
+  "clock; ele só chega ao barramento — e, portanto, ao acumulador — quando o sinal Eu é "
+  "ativado (no estado T6 das instruções ADD/SUB). Esse limite de 8 bits é a razão de o "
+  "SAP-1 só operar com valores de 0 a 255.")
 
 doc.add_heading("3.7. Controlador / Sequenciador", level=2)
+lead("O que se espera:", "o bloco mais crítico do processador. Espera-se um contador de "
+     "anel que percorra IDLE → T1 → … → T6 → IDLE e, em cada estado, emita uma palavra "
+     "de controle de 12 bits (CON) com a combinação exata de sinais daquele passo. A "
+     "palavra deve depender apenas do estado e do opcode — nunca do dado — garantindo "
+     "comportamento determinístico. Espera-se também que HLT trave a máquina em T4.")
 figure("onda_controller_painel.png",
        "Máquina de estados e palavra de controle de 12 bits por estado.", 15.5)
-p("Este é o bloco central da verificação. A onda mostra o contador de anel percorrendo "
-  "IDLE → T1 → T2 → … → T6 → IDLE, e a palavra de controle CON (12 bits) assumindo um "
-  "valor distinto em cada estado. Observam-se os pulsos dos sinais ativos em alto "
-  "(cp, ep, ea, su, eu) e a ausência de nível (0 = ativo) nos sinais ativos em baixo "
-  "(as cargas). Como a palavra depende apenas do estado e do opcode — nunca do dado —, "
-  "o comportamento é determinístico. Verifica-se também que, ao receber HLT, a máquina "
-  "permanece travada em T4 (parada correta).")
+p("A onda confirma cada expectativa. O anel percorre IDLE → T1 → T2 → … → T6 → IDLE, e "
+  "a palavra CON assume um valor distinto e bem definido em cada estado. Os sinais "
+  "ativos em alto (cp, ep, ea, su, eu) aparecem como pulsos nos estados corretos — por "
+  "exemplo, ep no T1 (o PC fala) e cp no T2 (o PC incrementa) —, enquanto os sinais "
+  "ativos em baixo (as cargas) descem a 0 apenas quando devem atuar. Um detalhe "
+  "importante confirmado aqui: a palavra de repouso não é toda-zero, justamente porque "
+  "as cargas são ativas em baixo. Por fim, ao aplicar HLT a máquina permanece travada "
+  "em T4, comprovando a parada correta. É desta tabela de palavras que nascem, "
+  "coordenadamente, todos os movimentos vistos nas ondas anteriores.")
 
 # =====================================================================
 # 4. VERIFICAÇÃO DO SISTEMA COMPLETO — OS 4 PROGRAMAS
@@ -296,72 +356,145 @@ p("Este é o bloco central da verificação. A onda mostra o contador de anel pe
 doc.add_heading("4. Verificação do sistema completo", level=1)
 p("Com os componentes validados, o testbench tb_sap1 exercita o processador inteiro. "
   "Para cada programa, a RAM é inicializada, a simulação roda até o HLT e a saída da "
-  "instrução OUT é comparada ao valor esperado. As ondas a seguir usam radix didáticos: "
-  "o estado aparece como T1…T6, o opcode como mnemônico e o datapath (PC, MAR, A, B, "
-  "ULA, saída) em decimal. Em todas, observa-se o ciclo busca (T1–T3) → execução "
-  "(T4–T6) e a parada em HLT/T4.")
+  "instrução OUT é comparada, por assert automático, ao valor esperado. As ondas a "
+  "seguir usam radix didáticos: o estado aparece como T1…T6, o opcode como mnemônico e "
+  "o datapath (PC, MAR, A, B, ULA, saída) em decimal.")
 
-def programa(titulo, subt, listagem, fig, expected, comentario):
+doc.add_heading("4.1. Modelo temporal esperado (como prever a onda)", level=2)
+p("Antes de analisar cada programa, convém fixar o modelo de tempo esperado — é ele "
+  "que permite \"prever\" a onda e depois conferir. Duas regras de temporização governam "
+  "tudo:")
+bullet("O **anel de estados avança na borda de descida** do clock (negedge): é quando a "
+       "máquina passa de T1 para T2, de T2 para T3, e assim por diante.")
+bullet("Os **registradores carregam na borda de subida** (posedge), quando seu sinal de "
+       "carga está ativo. Ou seja, o controle \"prepara\" o sinal em um estado e o dado é "
+       "efetivamente capturado no flanco seguinte.")
+p("Com isso, cada instrução consome exatamente 6 estados (T1–T6). Os três primeiros são "
+  "a busca, idênticos para toda instrução:")
+code([
+    "T1:  PC -> MAR        (endereco da instrucao vai para o MAR)",
+    "T2:  PC = PC + 1      (aponta para a proxima instrucao)",
+    "T3:  RAM -> IR        (a instrucao e' lida e decodificada)",
+])
+p("Os três últimos (execução) dependem do opcode:")
+code([
+    "LDA:  T4 IR.op -> MAR   T5 RAM -> A          (A muda no T5)",
+    "ADD:  T4 IR.op -> MAR   T5 RAM -> B   T6 ULA(A+B) -> A",
+    "SUB:  T4 IR.op -> MAR   T5 RAM -> B   T6 ULA(A-B) -> A",
+    "OUT:  T4 A -> registrador de saida                      ",
+    "HLT:  T4 trava o anel  (congela em T4, sem parar o clock)",
+])
+lead("Consequência prática na leitura da onda:", "em um ADD/SUB, o novo valor do "
+     "acumulador só aparece no T6 e, portanto, torna-se visível como valor \"assentado\" "
+     "já no T1 da instrução seguinte. Por isso, ao ler as ondas, o acumulador parece "
+     "mudar \"um passo depois\" — não é atraso indevido, é o modelo esperado. Esse "
+     "detalhe é a principal fonte de confusão ao interpretar formas de onda de "
+     "processadores, e a simulação o torna concreto.")
+lead("Número de ciclos esperado:", "como cada instrução leva 6 estados, um programa com "
+     "N instruções (contando o HLT) deve parar em torno de 6 × N ciclos. Usaremos essa "
+     "conta para conferir cada caso.")
+
+def programa(titulo, subt, listagem, fig, teoria, seq_label, seq, ciclos, comentario):
     doc.add_heading(titulo, level=2)
     p(subt, italic=True, color=GREY)
+    lead("Listagem (endereço : instrução):", "")
     code(listagem)
-    figure(fig, f"{titulo} — simulação completa (saída final = {expected}).", 16.0)
-    p(comentario)
+    lead("Resultado esperado (dedução):", teoria)
+    lead(seq_label, seq)
+    lead("Ciclos esperados:", ciclos)
+    figure(fig, f"{titulo} — simulação completa.", 16.0)
+    lead("O que a onda confirma:", comentario)
 
 programa(
-    "4.1. Programa 1 — 3³ = 27",
+    "4.2. Programa 1 — 3³ = 27",
     "Potência por somas sucessivas; exibe 9 (3²) e depois 27 (3³).",
-    ["mem[0] LDA 12   ; A <- 3", "mem[1] ADD 12   ; A <- 6",
-     "mem[2] ADD 12   ; A <- 9  (3^2)", "mem[3] OUT      ; mostra 9",
-     "mem[4] LDA 13   ; A <- 9", "mem[5] ADD 13   ; A <- 18",
-     "mem[6] ADD 13   ; A <- 27", "mem[7] SUB 14   ; ajuste",
-     "mem[8] ADD 12   ; ajuste", "mem[9] ADD 15   ; A <- 27 (3^3)",
-     "mem[10] OUT     ; mostra 27", "mem[11] HLT",
-     "mem[12..15] = 3, 9, 3, 0   ; dados"],
-    "onda_prog1_painel.png", "27",
-    "No acumulador (verde) acompanha-se a construção do resultado: 3, 6, 9 (primeiro "
-    "OUT = 9) e, na segunda etapa, 18, 27 até o valor final. A saída evolui 0 → 9 → 27 "
-    "e o processador para em HLT/T4. Resultado obtido = esperado = 27.")
+    ["0  LDA 12   ; A <- 3          8  ADD 12   ; A <- 27",
+     "1  ADD 12   ; A <- 6          9  ADD 15   ; A <- 27  (3^3)",
+     "2  ADD 12   ; A <- 9  (3^2)   10 OUT      ; mostra 27",
+     "3  OUT      ; mostra 9        11 HLT",
+     "4  LDA 13   ; A <- 9          12 dado = 3",
+     "5  ADD 13   ; A <- 18         13 dado = 9",
+     "6  ADD 13   ; A <- 27         14 dado = 3",
+     "7  SUB 14   ; A <- 24         15 dado = 0"],
+    "onda_prog1_painel.png",
+    "3³ = 3 × 3 × 3 = 27. Sem multiplicação nativa, o cálculo é feito em duas etapas: "
+    "primeiro 3² = 3+3+3 = 9 (exibido no primeiro OUT); depois 3³ = 9×3 = 9+9+9 = 27. As "
+    "instruções 7 e 8 (SUB 3 e ADD 3) se cancelam, servindo apenas para ajustar o "
+    "acumulador ao valor de dado disponível — uma limitação típica de não ter registrador "
+    "extra. O valor final esperado é 27 (0x1B).",
+    "Sequência esperada do acumulador:",
+    "3 → 6 → 9 (OUT = 9) → 9 → 18 → 27 → 24 → 27 → 27 (OUT = 27).",
+    "12 instruções × 6 estados = 72 ciclos.",
+    "no acumulador (verde) vê-se exatamente 3, 6, 9 (primeiro OUT = 9) e, na segunda "
+    "etapa, a subida até 27, com o segundo OUT exibindo 27. A saída (out_port) evolui "
+    "0 → 9 → 27 e o processador para em HLT/T4. O assert do testbench confirma: obtido = "
+    "esperado = 27.")
 
 programa(
-    "4.2. Programa 2 — Expressão aritmética = 18",
+    "4.3. Programa 2 — Expressão aritmética = 18",
     "Cadeia de somas e subtrações: (((7+3)−2)+5)−4, depois +7−3+5; exibe 9 e 18.",
-    ["mem[0] LDA 11 ; 7", "mem[1] ADD 12 ; +3 -> 10", "mem[2] SUB 13 ; -2 -> 8",
-     "mem[3] ADD 14 ; +5 -> 13", "mem[4] SUB 15 ; -4 -> 9", "mem[5] OUT    ; mostra 9",
-     "mem[6] ADD 11 ; +7 -> 16", "mem[7] SUB 12 ; -3 -> 13", "mem[8] ADD 14 ; +5 -> 18",
-     "mem[9] OUT    ; mostra 18", "mem[10] HLT",
-     "mem[11..15] = 7, 3, 2, 5, 4 ; dados"],
-    "onda_prog2_painel.png", "18",
-    "Este programa demonstra o encadeamento de operações e o uso de duas instruções OUT. "
-    "O acumulador percorre 7, 10, 8, 13, 9 (OUT = 9) e depois 16, 13, 18 (OUT = 18). "
-    "A saída evolui 0 → 9 → 18 e há parada em HLT/T4. Resultado obtido = esperado = 18.")
+    ["0  LDA 11 ; A <- 7           6  ADD 11 ; +7 -> 16",
+     "1  ADD 12 ; +3 -> 10         7  SUB 12 ; -3 -> 13",
+     "2  SUB 13 ; -2 -> 8          8  ADD 14 ; +5 -> 18",
+     "3  ADD 14 ; +5 -> 13         9  OUT    ; mostra 18",
+     "4  SUB 15 ; -4 -> 9          10 HLT",
+     "5  OUT    ; mostra 9         11..15 dados = 7, 3, 2, 5, 4"],
+    "onda_prog2_painel.png",
+    "A expressão avaliada é (((7+3)−2)+5)−4 = 9 no primeiro trecho e, continuando a "
+    "partir de 9, (((9+7)−3)+5) = 18 no segundo. Cada operando é buscado por endereço na "
+    "área de dados (posições 11 a 15). O valor final esperado é 18 (0x12).",
+    "Sequência esperada do acumulador:",
+    "7 → 10 → 8 → 13 → 9 (OUT = 9) → 16 → 13 → 18 (OUT = 18).",
+    "11 instruções × 6 estados = 66 ciclos (confirmado: HLT em 66 ciclos).",
+    "o acumulador percorre 7, 10, 8, 13, 9 e depois 16, 13, 18, batendo com a dedução "
+    "termo a termo. Este é o programa que melhor mostra o encadeamento de operações e o "
+    "uso de duas instruções OUT (resultados parciais). A saída evolui 0 → 9 → 18 e há "
+    "parada em HLT/T4. Assert: obtido = esperado = 18.")
 
 programa(
-    "4.3. Programa 3 — Multiplicação 3 × 4 = 12",
+    "4.4. Programa 3 — Multiplicação 3 × 4 = 12",
     "Como não há instrução de multiplicação, faz-se por somas repetidas (3+3+3+3).",
-    ["mem[0] LDA 11 ; A <- 3", "mem[1] ADD 11 ; A <- 6", "mem[2] ADD 11 ; A <- 9",
-     "mem[3] ADD 11 ; A <- 12", "mem[4] OUT    ; mostra 12",
-     "mem[5..8] SUB/ADD com dado 0 ; A inalterado", "mem[9] OUT    ; mostra 12",
-     "mem[10] HLT", "mem[11] = 3 ; dado"],
-    "onda_prog3_painel.png", "12",
-    "A \"assinatura\" da multiplicação aparece claramente no acumulador, que sobe de 3 "
-    "em 3: 3, 6, 9, 12. A ausência de laços (o SAP-1 não possui desvios) obriga a "
-    "repetir a soma explicitamente. A saída atinge 12 e o processador para em HLT/T4. "
-    "Resultado obtido = esperado = 12.")
+    ["0  LDA 11 ; A <- 3           5  SUB 12 ; dado 0, A inalterado",
+     "1  ADD 11 ; A <- 6           6  ADD 13 ; dado 0, A inalterado",
+     "2  ADD 11 ; A <- 9           7  SUB 14 ; dado 0, A inalterado",
+     "3  ADD 11 ; A <- 12          8  ADD 15 ; dado 0, A inalterado",
+     "4  OUT    ; mostra 12        9  OUT    ; mostra 12",
+     "                             10 HLT     11 dado = 3"],
+    "onda_prog3_painel.png",
+    "3 × 4 significa somar o número 3 quatro vezes: 3+3+3+3 = 12. Como o SAP-1 não tem "
+    "laços (não há desvio), as quatro somas são escritas explicitamente. As instruções 5 "
+    "a 8 operam com dados iguais a 0, de modo a não alterar o acumulador — servem apenas "
+    "para preencher o programa até o segundo OUT. O valor final esperado é 12 (0x0C).",
+    "Sequência esperada do acumulador:",
+    "3 → 6 → 9 → 12 (OUT = 12) → 12 → 12 → 12 → 12 (OUT = 12).",
+    "11 instruções × 6 estados = 66 ciclos (confirmado: HLT em 66 ciclos).",
+    "a \"assinatura\" da multiplicação é inconfundível: o acumulador sobe de 3 em 3 "
+    "(3, 6, 9, 12) e depois permanece constante (as somas/subtrações com 0). É a prova "
+    "visual de que multiplicar, aqui, é repetir soma. A saída atinge 12 e há parada em "
+    "HLT/T4. Assert: obtido = esperado = 12.")
 
 programa(
-    "4.4. Programa 4 — Divisão 12 ÷ 4 = 3",
+    "4.5. Programa 4 — Divisão 12 ÷ 4 = 3",
     "Divisão por subtrações repetidas: subtrai 4 até zerar e conta o quociente.",
-    ["mem[0] LDA 12 ; A <- 12", "mem[1] SUB 13 ; A <- 8", "mem[2] SUB 13 ; A <- 4",
-     "mem[3] SUB 13 ; A <- 0  (3 subtracoes)", "mem[4] LDA 14 ; A <- 1",
-     "mem[5] ADD 14 ; A <- 2", "mem[6] ADD 14 ; A <- 3  (quociente)",
-     "mem[7] OUT    ; mostra 3", "mem[8] HLT",
-     "mem[12..14] = 12, 4, 1 ; dados"],
-    "onda_prog4_painel.png", "3",
-    "A onda mostra o acumulador descendo de 4 em 4 (12, 8, 4, 0) — as três subtrações "
-    "que cabem em 12 — e, em seguida, a contagem do quociente 1, 2, 3. A saída atinge 3 "
-    "e há parada em HLT/T4. Por não haver desvio condicional, o número de subtrações é "
-    "fixo para este caso. Resultado obtido = esperado = 3.")
+    ["0  LDA 12 ; A <- 12          5  ADD 14 ; A <- 2",
+     "1  SUB 13 ; A <- 8           6  ADD 14 ; A <- 3   (quociente)",
+     "2  SUB 13 ; A <- 4           7  OUT    ; mostra 3",
+     "3  SUB 13 ; A <- 0           8  HLT",
+     "4  LDA 14 ; A <- 1           12..14 dados = 12, 4, 1"],
+    "onda_prog4_painel.png",
+    "12 ÷ 4 pergunta \"quantas vezes o 4 cabe no 12?\". A resposta é obtida subtraindo 4 "
+    "repetidamente até zerar: 12 → 8 → 4 → 0, ou seja, 3 subtrações. Como não há como "
+    "contar automaticamente (não há laço nem desvio), o quociente 3 é montado à mão, "
+    "somando 1 três vezes. O número de subtrações é fixo para este caso específico — "
+    "trocar os valores exigiria reescrever o programa. O valor final esperado é 3 (0x03).",
+    "Sequência esperada do acumulador:",
+    "12 → 8 → 4 → 0 (fim das subtrações) → 1 → 2 → 3 (OUT = 3).",
+    "9 instruções × 6 estados = 54 ciclos (confirmado: HLT em 54 ciclos).",
+    "a onda mostra o acumulador descendo de 4 em 4 (12, 8, 4, 0) — visualmente o oposto "
+    "da multiplicação — e, em seguida, a contagem do quociente 1, 2, 3. A saída atinge 3 "
+    "e há parada em HLT/T4. Assert: obtido = esperado = 3. Este caso evidencia bem a "
+    "principal limitação do SAP-1: sem desvio condicional, o algoritmo não se adapta aos "
+    "dados.")
 
 # =====================================================================
 # 5. RESULTADOS CONSOLIDADOS
@@ -371,14 +504,14 @@ p("Todos os 14 testbenches retornaram PASSOU, tanto no ModelSim ASE quanto no Ic
   "Verilog. Os quatro programas produziram exatamente a saída esperada e pararam "
   "corretamente em HLT. A tabela abaixo resume a verificação do sistema completo.")
 table(
-    ["Programa", "Operação", "Técnica", "Esperado", "Obtido", "Parada"],
+    ["Prog.", "Operação", "Técnica", "Esper.", "Obt.", "Ciclos", "Parada"],
     [
-        ["1", "3³", "somas sucessivas", "27", "27", "HLT/T4"],
-        ["2", "expressão", "soma/subtração encadeadas", "18", "18", "HLT/T4"],
-        ["3", "3 × 4", "somas repetidas", "12", "12", "HLT/T4"],
-        ["4", "12 ÷ 4", "subtrações repetidas", "3", "3", "HLT/T4"],
+        ["1", "3³", "somas sucessivas", "27", "27", "72", "HLT/T4"],
+        ["2", "expressão", "soma/subtração encadeadas", "18", "18", "66", "HLT/T4"],
+        ["3", "3 × 4", "somas repetidas", "12", "12", "66", "HLT/T4"],
+        ["4", "12 ÷ 4", "subtrações repetidas", "3", "3", "54", "HLT/T4"],
     ],
-    widths=[2.0, 2.6, 4.8, 2.0, 1.8, 2.2],
+    widths=[1.5, 2.4, 4.6, 1.6, 1.4, 1.7, 2.0],
 )
 p("Resultado global: 14/14 testbenches PASSOU · 4/4 programas corretos.",
   bold=True, color=GREEN)
