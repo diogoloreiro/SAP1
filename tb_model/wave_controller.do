@@ -7,7 +7,7 @@
 # =============================================================
 if {[file exists work]} { vdel -all }
 vlib work
-vlog -quiet ../controller_sequencer.v tb_controller_sequencer.v
+vlog -quiet ../rtl/controller_sequencer.v tb_controller_sequencer.v
 vsim -voptargs=+acc work.tb_controller_sequencer
 
 # ---- radix: estado do anel (one-hot -> nome) ----

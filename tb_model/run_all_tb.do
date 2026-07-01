@@ -10,10 +10,10 @@ if {[file exists work]} { vdel -all }
 vlib work
 
 # ---- modulos do projeto (pasta acima) ----
-vlog -quiet ../program_counter.v ../mar.v ../ram_16x8.v ../instruction_register.v \
-    ../accumulator.v ../adder_subtractor.v ../register_b.v ../output_register.v \
-    ../controller_sequencer.v ../sap1_top.v ../seg7.v ../seg7_instr.v \
-    ../clock_divider.v ../debouncer.v
+vlog -quiet ../rtl/program_counter.v ../rtl/mar.v ../rtl/ram_16x8.v ../rtl/instruction_register.v \
+    ../rtl/accumulator.v ../rtl/adder_subtractor.v ../rtl/register_b.v ../rtl/output_register.v \
+    ../rtl/controller_sequencer.v ../rtl/sap1_top.v ../fpga/seg7.v ../fpga/seg7_instr.v \
+    ../fpga/clock_divider.v ../fpga/debouncer.v
 
 # ---- testbenches (esta pasta) ----
 vlog -quiet tb_program_counter.v tb_mar.v tb_instruction_register.v tb_accumulator.v \

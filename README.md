@@ -10,9 +10,22 @@ por um contador de anel no controlador/sequenciador.
 
 ---
 
-## Estrutura do projeto
+## Estrutura de pastas
 
-### Núcleo do SAP-1 (datapath + controle)
+```
+SAP1/
+├── rtl/          → núcleo do processador (datapath + controle)
+├── fpga/         → camada de placa (displays, clock, debounce)
+├── tb_model/     → testbenches e scripts de simulação (ModelSim)
+├── docs/         → documentação e guias de estudo (.md + .pdf)
+├── fsm/          → diagramas da máquina de estados
+├── programas/    → programas de teste para a RAM (.txt)
+├── SAP1.qpf      → projeto do Quartus
+├── sap1_top.qsf  → pinagem da DE10-Lite
+└── README.md
+```
+
+### `rtl/` — núcleo do SAP-1
 | Arquivo | Bloco |
 |---|---|
 | `sap1_top.v` | Topo do núcleo — conecta tudo pelo barramento W |
@@ -27,7 +40,7 @@ por um contador de anel no controlador/sequenciador.
 | `adder_subtractor.v` | ALU (somador/subtrator) |
 | `output_register.v` | Registrador de saída |
 
-### Camada de placa (FPGA)
+### `fpga/` — camada de placa
 | Arquivo | Função |
 |---|---|
 | `sap1_fpga.v` | Topo de placa (clock lento, debounce, reset sync, displays) |
@@ -35,10 +48,8 @@ por um contador de anel no controlador/sequenciador.
 | `debouncer.v` | Antirruído dos botões |
 | `seg7.v` | Decodificador 7 segmentos (hexadecimal) |
 | `seg7_instr.v` | Decodificador opcode → letra (L/A/5/o/H) |
-| `sap1_top.qsf` | Pinagem da DE10-Lite |
-| `SAP1.qpf` | Arquivo de projeto do Quartus |
 
-### Programas de teste (RAM)
+### `programas/` — programas de teste (RAM)
 | Arquivo | Programa | Resultado |
 |---|---|---|
 | `programa1.txt` | 3³ | 27 (`1B`) |
@@ -46,25 +57,28 @@ por um contador de anel no controlador/sequenciador.
 | `programa3.txt` | 3 × 4 | 12 (`0C`) |
 | `programa4.txt` | 12 ÷ 4 | 3 (`03`) |
 
-### Testes (simulação ModelSim) — pasta `tb_model/`
+### `tb_model/` — testes (ModelSim)
 | Arquivo | O que é |
 |---|---|
-| `tb_model/tb_sap1.v` | Testbench geral (integração) — roda o programa e confere o resultado |
-| `tb_model/tb_<modulo>.v` | Um testbench autoverificável por componente |
-| `tb_model/run_all_tb.do` | Roda todos os testes |
-| `tb_model/run_one.do` | Roda um testbench só, com ondas |
-| `tb_model/wave_sap1.do` | Ondas didáticas da simulação completa |
-| `tb_model/wave_controller.do` | Ondas didáticas do controlador |
+| `tb_sap1.v` | Testbench geral (integração) — roda o programa e confere o resultado |
+| `tb_<modulo>.v` | Um testbench autoverificável por componente |
+| `run_all_tb.do` | Roda todos os testes |
+| `run_one.do` | Roda um testbench só, com ondas |
+| `wave_sap1.do` | Ondas didáticas da simulação completa |
+| `wave_controller.do` | Ondas didáticas do controlador |
 
-### Documentação
+### `docs/` e `fsm/` — documentação
 | Arquivo | Conteúdo |
 |---|---|
-| `FSM_explicacao.md` | Explicação da máquina de estados + exemplo passo a passo |
-| `roteiro_video.md` | Roteiro de apresentação da simulação |
-| `fsm_diagram.*` | Diagrama do anel de estados |
-| `fsm_exec_diagram.*` | Diagrama do ciclo de execução por instrução |
-| `fsm_trace_diagram.*` | Trace do exemplo (A: 0→3→6→9) |
-| `fsm_*.py` | Scripts Python que geram os diagramas |
+| `docs/GUIA_ESTUDO.md` | **Comece por aqui** — roteiro de estudo do projeto |
+| `docs/componentes.md` | Cada bloco explicado em detalhe |
+| `docs/palavra_controle.md` | A palavra de controle (CON) na prática |
+| `docs/fluxo_completo.md` | Como tudo funciona junto (barramento + 1 instrução) |
+| `docs/guia_ondas.md` | Como ler as ondas no ModelSim |
+| `docs/programa2_explicado.md` | O programa da RAM explicado instrução a instrução |
+| `docs/roteiro_video.md` | Roteiro de apresentação |
+| `fsm/FSM_explicacao.md` | A máquina de estados por dentro |
+| `fsm/fsm_*.{png,pdf,svg}` | Diagramas da FSM (+ scripts `.py` que os geram) |
 
 ---
 
@@ -84,12 +98,12 @@ do wave_controller.do      # ondas do controlador
 
 ## Como trocar o programa da RAM
 
-1. Abra `ram_16x8.v`.
+1. Abra `rtl/ram_16x8.v`.
 2. Substitua o bloco de linhas `mem[...]` pelo conteúdo de um dos
-   `programaN.txt`.
+   `programas/programaN.txt`.
 3. Recompile no Quartus (ou re-simule).
-4. Se for simular, ajuste `RESULTADO_ESPERADO` em `tb_sap1.v` para bater
-   com o novo programa.
+4. Se for simular, ajuste `RESULTADO_ESPERADO` em `tb_model/tb_sap1.v` para
+   bater com o novo programa.
 
 > O programa **começa sempre no endereço 0** e os operandos (`LDA 11`, etc.)
 > são endereços **absolutos** — não desloque os índices.

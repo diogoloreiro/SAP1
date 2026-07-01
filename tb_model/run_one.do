@@ -19,13 +19,14 @@ quietly set comp $1
 
 if {$comp eq "sap1"} {
     # teste geral: precisa do nucleo inteiro
-    vlog -quiet ../program_counter.v ../mar.v ../ram_16x8.v ../instruction_register.v \
-        ../accumulator.v ../adder_subtractor.v ../register_b.v ../output_register.v \
-        ../controller_sequencer.v ../sap1_top.v tb_sap1.v
+    vlog -quiet ../rtl/program_counter.v ../rtl/mar.v ../rtl/ram_16x8.v ../rtl/instruction_register.v \
+        ../rtl/accumulator.v ../rtl/adder_subtractor.v ../rtl/register_b.v ../rtl/output_register.v \
+        ../rtl/controller_sequencer.v ../rtl/sap1_top.v tb_sap1.v
     vsim -voptargs=+acc work.tb_sap1
 } else {
-    # teste unitario: o modulo + seu testbench
-    vlog -quiet ../${comp}.v tb_${comp}.v
+    # teste unitario: o modulo (em rtl/ ou fpga/) + seu testbench
+    if {[file exists ../rtl/${comp}.v]} { set dir rtl } else { set dir fpga }
+    vlog -quiet ../${dir}/${comp}.v tb_${comp}.v
     vsim -voptargs=+acc work.tb_${comp}
 }
 
