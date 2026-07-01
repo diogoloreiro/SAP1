@@ -28,6 +28,6 @@ module tb_adder_subtractor;
 
         if (errors == 0) $display("adder_subtractor: PASSOU");
         else             $display("adder_subtractor: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

@@ -1,18 +1,15 @@
 # =============================================================
 # wave_sap1.do - Ondas DIDATICAS da simulacao completa (tb_sap1)
-# Uso:  do wave_sap1.do
+# Uso (na pasta tb_model):  do wave_sap1.do
 #
-# Roda o programa que esta na RAM mostrando:
-#   - estado como T1..T6 (nao one-hot)
-#   - opcode como mnemonico (LDA/ADD/SUB/OUT/HLT)
-#   - PC, MAR, A, B, ALU e resultado em DECIMAL
-# Ideal para acompanhar o algoritmo passo a passo (ex.: 3 x 4).
+# Mostra o estado como T1..T6, o opcode como mnemonico e os
+# registradores (PC, MAR, A, B, ALU, resultado) em DECIMAL.
 # =============================================================
 if {[file exists work]} { vdel -all }
 vlib work
-vlog -quiet program_counter.v mar.v ram_16x8.v instruction_register.v \
-    accumulator.v adder_subtractor.v register_b.v output_register.v \
-    controller_sequencer.v sap1_top.v tb_sap1.v
+vlog -quiet ../program_counter.v ../mar.v ../ram_16x8.v ../instruction_register.v \
+    ../accumulator.v ../adder_subtractor.v ../register_b.v ../output_register.v \
+    ../controller_sequencer.v ../sap1_top.v tb_sap1.v
 vsim -voptargs=+acc work.tb_sap1
 
 # ---- radix: estado do anel (one-hot -> nome) ----

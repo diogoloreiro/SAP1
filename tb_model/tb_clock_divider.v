@@ -36,6 +36,6 @@ module tb_clock_divider;
 
         if (errors == 0) $display("clock_divider: PASSOU");
         else             $display("clock_divider: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

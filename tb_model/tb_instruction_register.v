@@ -40,6 +40,6 @@ module tb_instruction_register;
 
         if (errors == 0) $display("instruction_register: PASSOU");
         else             $display("instruction_register: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

@@ -13,8 +13,7 @@
 //   - PARA quando hlt=1 (ou por timeout) e faz a AUTOVERIFICACAO:
 //        saida final esperada = 27 (0x1B)
 //
-// Como rodar no ModelSim:   do run_sim.do      (script ao lado)
-// Ou manualmente:           vsim -voptargs=+acc work.tb_sap1 ; run -all
+// Como rodar no ModelSim:   do wave_sap1.do    (script nesta pasta)
 // =============================================================
 `timescale 1ns / 1ps
 
@@ -29,13 +28,16 @@ module tb_sap1;
     wire       hlt;
     wire [7:0] bus_w;
     wire [5:0] tstate;
+    wire [3:0] opcode;   // observacao (evita warning de porta nao conectada)
+    wire [7:0] acc;      // acumulador A exposto pelo topo
+    wire [7:0] breg;     // registrador B exposto pelo topo
 
     // ---- resultado esperado: AJUSTE conforme o programa na RAM ----
     //   programa1 (3^3)       -> 27
-    //   programa2 (expressao) -> 18
-    //   programa3 (3 x 4)     -> 12   <-- carregado atualmente
+    //   programa2 (expressao) -> 18   <-- carregado atualmente
+    //   programa3 (3 x 4)     -> 12
     //   programa4 (12 / 4)    -> 3
-    localparam [7:0] RESULTADO_ESPERADO = 8'd12;
+    localparam [7:0] RESULTADO_ESPERADO = 8'd18;
 
     // -------------------------------------------------------
     // DUT  (Device Under Test) = nucleo do SAP-1
@@ -46,7 +48,10 @@ module tb_sap1;
         .out_port (out_port),
         .hlt      (hlt),
         .bus_w    (bus_w),
-        .tstate   (tstate)
+        .tstate   (tstate),
+        .opcode   (opcode),
+        .acc      (acc),
+        .breg     (breg)
     );
 
     // -------------------------------------------------------
@@ -135,15 +140,7 @@ module tb_sap1;
                      out_port, out_port, RESULTADO_ESPERADO, RESULTADO_ESPERADO);
         end
         $display("==================================================\n");
-        $finish;
-    end
-
-    // -------------------------------------------------------
-    // Dump de ondas (VCD) - opcional, alem do .wlf do ModelSim
-    // -------------------------------------------------------
-    initial begin
-        $dumpfile("sap1.vcd");
-        $dumpvars(0, tb_sap1);
+        $stop;
     end
 
 endmodule

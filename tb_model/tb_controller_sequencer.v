@@ -63,6 +63,6 @@ module tb_controller_sequencer;
 
         if (errors == 0) $display("controller_sequencer: PASSOU");
         else             $display("controller_sequencer: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

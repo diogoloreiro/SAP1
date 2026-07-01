@@ -46,16 +46,15 @@ por um contador de anel no controlador/sequenciador.
 | `programa3.txt` | 3 × 4 | 12 (`0C`) |
 | `programa4.txt` | 12 ÷ 4 | 3 (`03`) |
 
-### Testes (simulação)
+### Testes (simulação ModelSim) — pasta `tb_model/`
 | Arquivo | O que é |
 |---|---|
-| `tb_sap1.v` | Testbench geral (integração) — roda o programa e confere o resultado |
-| `tb_<modulo>.v` | Um testbench autoverificável por componente |
-| `run_all_tb.do` / `.sh` | Roda todos os testes (ModelSim / Icarus) |
-| `run_one.do` | Roda um testbench só, com ondas |
-| `run_sim.do` | Simulação completa com ondas |
-| `wave_sap1.do` | Ondas didáticas da simulação completa |
-| `wave_controller.do` | Ondas didáticas do controlador |
+| `tb_model/tb_sap1.v` | Testbench geral (integração) — roda o programa e confere o resultado |
+| `tb_model/tb_<modulo>.v` | Um testbench autoverificável por componente |
+| `tb_model/run_all_tb.do` | Roda todos os testes |
+| `tb_model/run_one.do` | Roda um testbench só, com ondas |
+| `tb_model/wave_sap1.do` | Ondas didáticas da simulação completa |
+| `tb_model/wave_controller.do` | Ondas didáticas do controlador |
 
 ### Documentação
 | Arquivo | Conteúdo |
@@ -71,11 +70,14 @@ por um contador de anel no controlador/sequenciador.
 
 ## Como simular (ModelSim)
 
+Os testbenches e scripts ficam na pasta `tb_model/`. Abra o ModelSim nessa
+pasta (ou `cd tb_model` no console) e rode:
+
 ```tcl
-do run_sim.do        # simulação completa com ondas
-do wave_sap1.do      # versão didática (estado nomeado, registradores em decimal)
-do run_all_tb.do     # roda todos os testbenches
-do run_one.do accumulator     # roda só um componente
+do wave_sap1.do            # simulação completa com ondas didáticas
+do run_all_tb.do           # roda todos os testbenches (PASSOU/FALHOU)
+do run_one.do accumulator  # roda só um componente, com ondas
+do wave_controller.do      # ondas do controlador
 ```
 
 ---

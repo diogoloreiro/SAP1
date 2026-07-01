@@ -1,16 +1,16 @@
 # =============================================================
 # wave_controller.do - Ondas DIDATICAS do controller_sequencer
-# Uso:  do wave_controller.do
+# Uso (na pasta tb_model):  do wave_controller.do
 #
-# Mostra o estado como T1..T6 (em vez de one-hot), o opcode como
-# mnemonico, e agrupa os sinais para leitura facil.
+# Mostra o estado como T1..T6, o opcode como mnemonico e agrupa
+# os sinais de controle (ativos-alto e ativos-baixo).
 # =============================================================
 if {[file exists work]} { vdel -all }
 vlib work
-vlog -quiet controller_sequencer.v tb_controller_sequencer.v
+vlog -quiet ../controller_sequencer.v tb_controller_sequencer.v
 vsim -voptargs=+acc work.tb_controller_sequencer
 
-# ---- radix: estado do anel (one-hot -> nome legivel) ----
+# ---- radix: estado do anel (one-hot -> nome) ----
 radix define ESTADO {
     6'b000000 "IDLE",
     6'b000001 "T1",
@@ -32,7 +32,6 @@ radix define OPCODE {
     -default hex
 }
 
-# ---- monta a janela de ondas ----
 delete wave *
 configure wave -namecolwidth 200
 configure wave -valuecolwidth 90
@@ -44,7 +43,7 @@ add wave -divider "RELOGIO / RESET"
 add wave -color {Yellow}    $TOP/clk
 add wave                    $TOP/clr_bar
 
-add wave -divider "ESTADO  (o que ler primeiro)"
+add wave -divider "ESTADO  (ler primeiro)"
 add wave -radix ESTADO -color {Magenta}  $TOP/ring
 add wave -radix OPCODE                   $TOP/opcode
 add wave -color {Orange}                 $TOP/hlt

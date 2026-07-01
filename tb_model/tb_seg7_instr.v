@@ -23,6 +23,6 @@ module tb_seg7_instr;
 
         if (errors == 0) $display("seg7_instr: PASSOU");
         else             $display("seg7_instr: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

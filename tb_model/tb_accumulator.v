@@ -31,6 +31,6 @@ module tb_accumulator;
 
         if (errors == 0) $display("accumulator: PASSOU");
         else             $display("accumulator: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

@@ -35,6 +35,6 @@ module tb_mar;
 
         if (errors == 0) $display("mar: PASSOU");
         else             $display("mar: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

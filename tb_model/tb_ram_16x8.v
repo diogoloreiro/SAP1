@@ -28,6 +28,6 @@ module tb_ram_16x8;
 
         if (errors == 0) $display("ram_16x8: PASSOU");
         else             $display("ram_16x8: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

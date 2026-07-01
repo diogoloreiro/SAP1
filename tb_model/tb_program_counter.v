@@ -41,6 +41,6 @@ module tb_program_counter;
 
         if (errors == 0) $display("program_counter: PASSOU");
         else             $display("program_counter: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

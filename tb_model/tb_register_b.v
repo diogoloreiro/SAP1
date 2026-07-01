@@ -31,6 +31,6 @@ module tb_register_b;
 
         if (errors == 0) $display("register_b: PASSOU");
         else             $display("register_b: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

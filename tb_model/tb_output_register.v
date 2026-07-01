@@ -33,6 +33,6 @@ module tb_output_register;
 
         if (errors == 0) $display("output_register: PASSOU");
         else             $display("output_register: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

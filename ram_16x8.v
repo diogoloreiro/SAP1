@@ -26,23 +26,23 @@ module ram_16x8 (
             mem[i] = 8'h00;
 
        
-        // Programa 3: 3 x 4 = 12  (somas repetidas de 3)
+        // Programa 2: (((7+3)-2)+5)-4 +7-3+5   (mostra 9 e depois 18)
         mem[0]  = 8'b0000_1011; // LDA 11
-        mem[1]  = 8'b0001_1011; // ADD 11
-        mem[2]  = 8'b0001_1011; // ADD 11
-        mem[3]  = 8'b0001_1011; // ADD 11   -> 12
-        mem[4]  = 8'b1110_0000; // OUT       -> 12
-        mem[5]  = 8'b0010_1100; // SUB 12   (dado 0)
-        mem[6]  = 8'b0001_1101; // ADD 13   (dado 0)
-        mem[7]  = 8'b0010_1110; // SUB 14   (dado 0)
-        mem[8]  = 8'b0001_1111; // ADD 15   (dado 0)
-        mem[9]  = 8'b1110_0000; // OUT       -> 12
+        mem[1]  = 8'b0001_1100; // ADD 12
+        mem[2]  = 8'b0010_1101; // SUB 13
+        mem[3]  = 8'b0001_1110; // ADD 14
+        mem[4]  = 8'b0010_1111; // SUB 15
+        mem[5]  = 8'b1110_0000; // OUT       -> 9
+        mem[6]  = 8'b0001_1011; // ADD 11
+        mem[7]  = 8'b0010_1100; // SUB 12
+        mem[8]  = 8'b0001_1110; // ADD 14
+        mem[9]  = 8'b1110_0000; // OUT       -> 18
         mem[10] = 8'b1111_0000; // HLT
-        mem[11] = 8'd3;         // dado
-        mem[12] = 8'd0;         // dado
-        mem[13] = 8'd0;         // dado
-        mem[14] = 8'd0;         // dado
-        mem[15] = 8'd0;         // dado
+        mem[11] = 8'd7;         // dado
+        mem[12] = 8'd3;         // dado
+        mem[13] = 8'd2;         // dado
+        mem[14] = 8'd5;         // dado
+        mem[15] = 8'd4;         // dado
 
     end
 

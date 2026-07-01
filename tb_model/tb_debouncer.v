@@ -38,6 +38,6 @@ module tb_debouncer;
 
         if (errors == 0) $display("debouncer: PASSOU");
         else             $display("debouncer: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule

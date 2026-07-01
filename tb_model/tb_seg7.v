@@ -24,6 +24,6 @@ module tb_seg7;
 
         if (errors == 0) $display("seg7: PASSOU");
         else             $display("seg7: FALHOU (%0d erros)", errors);
-        $finish;
+        $stop;
     end
 endmodule
