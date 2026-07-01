@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # =============================================================
-# gerar_pptx.py - Apresentacao do SAP-1 em 4 PARTES
-#   1) Objetivo e FSM   2) PC e RAM   3) Palavra de controle
-#   4) Validacao e conclusao
-# Design profissional (cards, callouts, codigo, tabelas, imagens),
-# notas do apresentador e rodape numerado.
-# Uso (na pasta apresentacao):  python3 gerar_pptx.py
+# gerar_pptx_4partes.py - Apresentacao do SAP-1 em 4 PARTES,
+# apresentada por 3 PESSOAS (a Pessoa 2 cobre as partes 2 e 3):
+#   1) Objetivo e FSM ............ Pessoa 1
+#   2) PC e Memoria RAM .......... Pessoa 2
+#   3) Palavra de controle ....... Pessoa 2
+#   4) Validacao e conclusao ..... Pessoa 3
+# Uso (na pasta apresentacao):  python3 gerar_pptx_4partes.py
 # =============================================================
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -22,9 +23,9 @@ DARK  = RGBColor(0x0D,0x2B,0x4E); MID = RGBColor(0x0D,0x3B,0x66)
 BLUE  = RGBColor(0x15,0x65,0xC0); TEAL= RGBColor(0x00,0x83,0x8F)
 GREY  = RGBColor(0x5A,0x63,0x6E); LGREY=RGBColor(0xEC,0xF1,0xF5)
 WHITE = RGBColor(0xFF,0xFF,0xFF); INK = RGBColor(0x1B,0x26,0x31)
-ORANGE=RGBColor(0xE6,0x5C,0x00); PURPLE=RGBColor(0x6A,0x3D,0x9A)
+ORANGE=RGBColor(0xE6,0x5C,0x00)
 CODEBG= RGBColor(0x1E,0x24,0x30); CODEFG=RGBColor(0xE6,0xED,0xF3)
-PRES  = {"Pessoa 1": BLUE, "Pessoa 2": TEAL, "Pessoa 3": ORANGE, "Pessoa 4": PURPLE}
+PRES  = {"Pessoa 1": BLUE, "Pessoa 2": TEAL, "Pessoa 3": ORANGE}
 NPARTS = 4
 
 prs = Presentation()
@@ -69,8 +70,8 @@ def cover(title,sub):
     _para(tf,sub,20,RGBColor(0xC7,0xDD,0xF0))
     _rect(s,Inches(0.95),Inches(4.35),Inches(4.2),Inches(0.045),ORANGE)
     tf=_tb(s,Inches(0.92),Inches(4.6),Inches(11.5),Inches(1.7))
-    for i in range(4):
-        _para(tf,f"Integrante {i+1}  ·  [nome]",17,WHITE,first=(i==0),after=4)
+    for i in range(3):
+        _para(tf,f"Integrante {i+1}  ·  [nome]",18,WHITE,first=(i==0),after=5)
     _para(_tb(s,Inches(0.92),Inches(6.7),Inches(11.5),Inches(0.5)),
           f"{INSTITUICAO}   ·   {DATA}",14,RGBColor(0x9F,0xB6,0xCC),first=True)
     META.append((s,None)); return s
@@ -133,20 +134,6 @@ def cards(title,items,ap,nota,kicker=None):
         _para(tf,t,17,MID,bold=True,first=True,after=5); _para(tf,body,14,GREY,after=0)
     META.append((s,ap)); notes(s,nota); return s
 
-def code_slide(title,intro,code,ap,nota,takeaway=None,kicker=None):
-    s=prs.slides.add_slide(BLANK); _header(s,title,PRES[ap],kicker)
-    _para(_tb(s,Inches(0.75),Inches(1.5),Inches(11.8),Inches(0.7)),intro,18,INK,first=True,after=0)
-    _rect(s,Inches(0.75),Inches(2.35),Inches(11.85),Inches(3.4),CODEBG,rounded=True)
-    tf=_tb(s,Inches(1.05),Inches(2.55),Inches(11.3),Inches(3.0))
-    for i,ln in enumerate(code.split("\n")):
-        _para(tf,ln if ln else " ",15,CODEFG,first=(i==0),after=2,name="Consolas")
-    if takeaway:
-        _rect(s,Inches(0.75),Inches(6.0),Inches(11.85),Inches(0.72),LGREY,rounded=True)
-        _rect(s,Inches(0.75),Inches(6.0),Inches(0.12),Inches(0.72),PRES[ap])
-        tf=_tb(s,Inches(1.05),Inches(6.05),Inches(11.4),Inches(0.62)); tf.vertical_anchor=MSO_ANCHOR.MIDDLE
-        _para(tf,"Chave:  "+takeaway,15,MID,bold=True,first=True,after=0)
-    META.append((s,ap)); notes(s,nota); return s
-
 def image(title,img,cap,ap,nota,kicker=None):
     s=prs.slides.add_slide(BLANK); _header(s,title,PRES[ap],kicker)
     pic=s.shapes.add_picture(img,0,Inches(1.5),height=Inches(4.95)); pic.left=int((SW-pic.width)/2)
@@ -187,24 +174,25 @@ def finalize():
               f"{i+1:02d} / {total:02d}",10.5,GREY,align=PP_ALIGN.RIGHT,first=True,after=0)
 
 # =============================================================
-# CONTEUDO — 4 PARTES
+# CONTEUDO — 4 PARTES, 3 APRESENTADORES
 # =============================================================
 cover("SAP-1 — Simple-As-Possible",
       "Arquitetura e implementação de um processador de 8 bits em Verilog · FPGA DE10-Lite")
 notes(prs.slides[0],"Abertura. Apresentem-se e digam que vao mostrar o processador SAP-1, "
-      "em 4 partes.")
+      "em 4 partes, por 3 integrantes.")
 
 agenda([
     (BLUE,  "Objetivo e FSM","Pessoa 1",
      ["Objetivo do trabalho","Nossa abordagem","Arquitetura (datapath)","Ciclo e máquina de estados"]),
     (TEAL,  "Program Counter e RAM","Pessoa 2",
      ["Program Counter (PC)","MAR — endereço","Memória RAM 16×8","Ciclo de busca"]),
-    (ORANGE,"Palavra de controle","Pessoa 3",
+    (TEAL,  "Palavra de controle","Pessoa 2",
      ["Os 12 sinais de controle","Falar e ouvir","Palavras por estado","Exemplo: ADD"]),
-    (PURPLE,"Validação e conclusão","Pessoa 4",
+    (ORANGE,"Validação e conclusão","Pessoa 3",
      ["Implementação em Verilog","Verificação (testbenches)","Placa e programas","Conclusão"]),
 ])
-notes(prs.slides[1],"Mostrem o roteiro: 4 partes, uma por integrante.")
+notes(prs.slides[1],"Mostrem o roteiro: 4 partes. Pessoa 1 abre; Pessoa 2 cobre as partes "
+      "2 e 3 (componentes e controle); Pessoa 3 fecha com validacao e conclusao.")
 
 # ============ PARTE 1 — OBJETIVO E FSM (Pessoa 1) ============
 section(1,"Objetivo e FSM","Pessoa 1",
@@ -318,11 +306,11 @@ table("Como PC, MAR e RAM trabalham na busca (T1–T3)",
     "Pessoa 2",
     "Juntando os tres: na busca, o PC manda o endereco pro MAR (T1), o PC se incrementa "
     "(T2), e a RAM entrega a instrucao, que vai pro IR (T3). Esses tres passos sao iguais "
-    "para toda instrucao. Passo para a Pessoa 3 explicar como esses sinais sao gerados.",
+    "para toda instrucao. Sigo agora para a palavra de controle, que gera esses sinais.",
     kicker="Funcionamento", widths=[1.8,6.6,2.7])
 
-# ============ PARTE 3 — PALAVRA DE CONTROLE (Pessoa 3) ============
-section(3,"Palavra de Controle","Pessoa 3",
+# ============ PARTE 3 — PALAVRA DE CONTROLE (Pessoa 2) ============
+section(3,"Palavra de Controle","Pessoa 2",
     ["Os 12 sinais de controle","Falar e ouvir no barramento",
      "As palavras de controle por estado","Exemplo: execução do ADD"])
 
@@ -332,7 +320,7 @@ content("A palavra de controle (12 bits)",
      ("CON = { Cp, Ep, ~Lm, ~CE, ~Li, ~Ei, ~La, Ea, Su, Eu, ~Lb, ~Lo }",1),
      "Depende APENAS do estado e do opcode — nunca do dado",
      ("Por isso o processador é determinístico",1)],
-    "Pessoa 3",
+    "Pessoa 2",
     "O que sai da maquina de estados e a palavra de controle: 12 bits que, a cada "
     "estado, dizem o que cada bloco faz. Cada bit comanda um bloco. E o mais importante: "
     "ela depende so do estado e da instrucao, nunca do dado - por isso o comportamento e "
@@ -347,7 +335,7 @@ content("Falar e ouvir no barramento",
      "Sinais ativos-ALTO (1=liga): Cp Ep Ea Su Eu",
      "Sinais ativos-BAIXO (0=liga): os com til (~)",
      ("Repouso (IDLE) = 0011_1110_0011 — nada ativo",1)],
-    "Pessoa 3",
+    "Pessoa 2",
     "Na pratica, a palavra escolhe quem fala e quem ouve no barramento. Ha cinco sinais "
     "de falar e cinco de ouvir. Um detalhe: alguns sao ativos em baixo, agem quando "
     "valem zero. Por isso o estado de repouso nao e tudo zero.",
@@ -364,7 +352,7 @@ table("As palavras de controle por estado",
      ["T5 (ADD/SUB)","0010_1110_0001","B ← RAM"],
      ["T6 (ADD)","0011_1100_0111","A ← A+B"],
      ["T6 (SUB)","0011_1100_1111","A ← A−B"]],
-    "Pessoa 3",
+    "Pessoa 2",
     "Esta tabela mostra as 'receitas' - a palavra de 12 bits de cada estado e a acao que "
     "ela produz. A busca (T1 a T3) e igual pra todas; a execucao (T4 a T6) muda conforme "
     "a instrucao. Da pra ler cada palavra comparando com o repouso.",
@@ -378,14 +366,14 @@ table("Exemplo: execução do ADD",
      ["T4","~Ei, ~Lm","MAR ← operando"],
      ["T5","~CE, ~Lb","B ← RAM (o dado)"],
      ["T6","Eu, ~La","A ← A + B"]],
-    "Pessoa 3",
+    "Pessoa 2",
     "Juntando tudo num exemplo: o ADD, estado por estado. Cada linha e uma palavra de "
     "controle em acao. Busca nos tres primeiros, acha o dado no T4, carrega o B no T5, e "
-    "soma no T6. Passo para a Pessoa 4 mostrar como validamos tudo isso.",
+    "soma no T6. Passo para a Pessoa 3 mostrar como validamos tudo isso.",
     kicker="Funcionamento", widths=[1.8,3.4,5.9])
 
-# ============ PARTE 4 — VALIDACAO E CONCLUSAO (Pessoa 4) ============
-section(4,"Validação e Conclusão","Pessoa 4",
+# ============ PARTE 4 — VALIDACAO E CONCLUSAO (Pessoa 3) ============
+section(4,"Validação e Conclusão","Pessoa 3",
     ["Implementação em Verilog","Verificação por simulação",
      "Execução na placa e programas testados","Conclusão e trabalhos futuros"])
 
@@ -394,7 +382,7 @@ cards("Implementação em Verilog",
      ("Barramento por mux","Em vez de tri-state interno — robusto e sintetizável em FPGA."),
      ("HLT por clock-enable","Congela a FSM sem desligar o clock (evita gating de clock)."),
      ("Reset seguro","Assíncrono no assert, sincronizado no desassert.")],
-    "Pessoa 4",
+    "Pessoa 3",
     "Na implementacao, cada bloco virou um modulo Verilog. Tomamos cuidado com boas "
     "praticas: barramento por multiplexador, HLT por clock-enable em vez de desligar o "
     "clock, e um reset bem tratado. Isso deixou o projeto robusto e sintetizavel.",
@@ -406,7 +394,7 @@ content("Verificação por simulação",
      ("um por componente (PC, MAR, ULA, controlador, …)",1),
      ("+ um de integração, que roda um programa e confere o resultado final",1),
      "Resultado: todos passam (PASSOU · 0 erros)"],
-    "Pessoa 4",
+    "Pessoa 3",
     "Para validar, nao confiamos so no olho: cada bloco tem um teste automatico que diz "
     "PASSOU ou FALHOU. Sao 14 testes, incluindo um que roda um programa inteiro e "
     "confere o resultado. Todos passam.",
@@ -418,7 +406,7 @@ content("Execução na placa — DE10-Lite",
      "Displays de 7 segmentos mostram o funcionamento interno:",
      ("HEX5 = estado (1–6) · HEX4 = instrução · HEX3-2 = A · HEX1-0 = resultado",1),
      "Modo passo a passo por botão (avança um estado por vez)"],
-    "Pessoa 4",
+    "Pessoa 3",
     "E roda de verdade na placa, com clock lento pra dar pra acompanhar. Os seis displays "
     "mostram o estado, a instrucao, o acumulador e o resultado. Da pra avancar passo a "
     "passo. Se possivel, facam a demonstracao ao vivo.",
@@ -430,7 +418,7 @@ table("Programas testados",
      ["(((7+3)−2)+5)−4 +7−3+5","Soma/subtração encadeadas","18  (0x12)"],
      ["3 × 4","Multiplicação por somas","12  (0x0C)"],
      ["12 ÷ 4","Divisão por subtrações","3  (0x03)"]],
-    "Pessoa 4",
+    "Pessoa 3",
     "Testamos com quatro programas. Como o SAP-1 so soma e subtrai, fazemos "
     "multiplicacao com somas repetidas e divisao com subtracoes. Todos deram o resultado "
     "esperado, tanto na simulacao quanto na placa.",
@@ -442,7 +430,7 @@ content("Conclusão e trabalhos futuros",
      "Verificado por simulação e validado na placa real",
      "Trabalhos futuros:",
      ("instrução de escrita (STA), desvios (JMP) para laços, rumo ao SAP-2",1)],
-    "Pessoa 4",
+    "Pessoa 3",
     "Para concluir: construimos um processador inteiro e entendemos tanto a arquitetura "
     "quanto o funcionamento. Verificamos com testes e validamos na placa. Como evolucao, "
     "daria pra adicionar escrita na memoria e desvios, chegando ao SAP-2. Obrigado.",
@@ -452,5 +440,5 @@ content("Conclusão e trabalhos futuros",
 closing()
 finalize()
 
-prs.save("SAP1_apresentacao.pptx")
-print("PPTX gerado: SAP1_apresentacao.pptx (%d slides)"%len(prs.slides._sldIdLst))
+prs.save("SAP1_apresentacao_4partes.pptx")
+print("PPTX gerado: SAP1_apresentacao_4partes.pptx (%d slides)"%len(prs.slides._sldIdLst))
