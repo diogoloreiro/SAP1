@@ -16,10 +16,28 @@ from docx.oxml import OxmlElement
 HERE = os.path.dirname(os.path.abspath(__file__))
 IMG  = os.path.abspath(os.path.join(HERE, "..", "apresentacao", "img"))
 OUT  = os.path.join(HERE, "Relatorio_Simulacao_SAP1.docx")
+NOCAPA = os.environ.get("SAP1_NOCAPA") == "1"   # gera corpo sem capa (p/ compor)
+if NOCAPA:
+    OUT = os.path.join(HERE, "_sim_body.docx")
 
 DARK  = RGBColor(0x0d, 0x3b, 0x66)
 GREY  = RGBColor(0x55, 0x55, 0x55)
 GREEN = RGBColor(0x1b, 0x5e, 0x20)
+
+# ---- cache de imagens reduzidas (abre mais rapido no Word/LibreOffice) ----
+import tempfile, hashlib
+from PIL import Image
+CACHE = tempfile.mkdtemp(prefix="sap1img_")
+def _prep(path, maxw=1200):
+    if not os.path.exists(path):
+        return path
+    im = Image.open(path).convert("RGB")
+    if im.width <= maxw:
+        return path
+    h = int(im.height * maxw / im.width)
+    out = os.path.join(CACHE, hashlib.md5(path.encode()).hexdigest() + ".png")
+    im.resize((maxw, h), Image.LANCZOS).save(out, optimize=True, compress_level=9)
+    return out
 
 doc = Document()
 
@@ -89,7 +107,7 @@ def figure(fname, caption, width_cm=15.5):
     if not os.path.exists(path):
         p(f"[figura ausente: {fname}]", italic=True, color=GREY); return
     par = doc.add_paragraph(); par.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    par.add_run().add_picture(path, width=Cm(width_cm))
+    par.add_run().add_picture(_prep(path), width=Cm(width_cm))
     FIGN[0] += 1
     cap = doc.add_paragraph()
     cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -101,6 +119,7 @@ def table(headers, rows, widths=None):
     t = doc.add_table(rows=1, cols=len(headers))
     t.style = "Light Grid Accent 1"
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = False  # layout fixo (tblLayout=fixed): evita recalculo pesado ao abrir
     for j, h in enumerate(headers):
         c = t.rows[0].cells[j]
         c.text = ""
@@ -120,20 +139,21 @@ def table(headers, rows, widths=None):
 # =====================================================================
 # CAPA
 # =====================================================================
-for _ in range(3): doc.add_paragraph()
-p("Processador SAP-1", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size=30, color=DARK)
-p("Relatório de Verificação Funcional por Simulação",
-  align=WD_ALIGN_PARAGRAPH.CENTER, size=16, color=GREY)
-doc.add_paragraph()
-p("Implementação em Verilog · Simulação em ModelSim ASE 2020.1",
-  align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size=12)
-p("Plataforma-alvo: Terasic DE10-Lite (Intel MAX 10)",
-  align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size=12, color=GREY)
-for _ in range(6): doc.add_paragraph()
-p("Disciplina: __________________________", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-p("Integrantes: __________________________", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-p("Data: ____ / ____ / ______", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
-doc.add_page_break()
+if not NOCAPA:
+    for _ in range(3): doc.add_paragraph()
+    p("Processador SAP-1", align=WD_ALIGN_PARAGRAPH.CENTER, bold=True, size=30, color=DARK)
+    p("Relatório de Verificação Funcional por Simulação",
+      align=WD_ALIGN_PARAGRAPH.CENTER, size=16, color=GREY)
+    doc.add_paragraph()
+    p("Implementação em Verilog · Simulação em ModelSim ASE 2020.1",
+      align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size=12)
+    p("Plataforma-alvo: Terasic DE10-Lite (Intel MAX 10)",
+      align=WD_ALIGN_PARAGRAPH.CENTER, italic=True, size=12, color=GREY)
+    for _ in range(6): doc.add_paragraph()
+    p("Disciplina: __________________________", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
+    p("Integrantes: __________________________", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
+    p("Data: ____ / ____ / ______", align=WD_ALIGN_PARAGRAPH.CENTER, size=12)
+    doc.add_page_break()
 
 # =====================================================================
 # 1. INTRODUÇÃO
